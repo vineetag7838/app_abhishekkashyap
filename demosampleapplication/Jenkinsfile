@@ -24,7 +24,7 @@ pipeline {
   stages { 
         stage('Build') {
             steps{
-            	git url: 'https://github.com/abhishekkashyapsudo/jenkins.git'
+            	git url: 'https://github.com/abhishekkashyapsudo/app_abhishekkashyap.git'
                 sh 'mvn -f demosampleapplication/pom.xml clean install'
             }
         }
@@ -57,9 +57,9 @@ pipeline {
                     if ("echo ${result}" != '') {
                         sh "docker stop ${result}"
                     }
-                def result = sh(returnStdout: true, script: 'docker ps --filter expose=8080  --format "{{.ID}}"')
-                    if ("echo ${result}" != '') {
-                        sh "docker stop ${result}"
+                def result1 = sh(returnStdout: true, script: 'docker ps --filter expose=8080  --format "{{.ID}}"')
+                    if ("echo ${result1}" != '') {
+                        sh "docker stop ${result1}"
                     } 
               },
               'PushToDockerHub': {
