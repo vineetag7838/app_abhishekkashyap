@@ -52,14 +52,16 @@ pipeline {
           steps {
             parallel(
               'PreContainerCheck': {
-                def result = sh(returnStdout: true, script: 'docker ps --filter publish=8080  --format "{{.ID}}"')
+               script {
+                    def result = sh(returnStdout: true, script: 'docker ps --filter publish=8080  --format "{{.ID}}"')
                     if ("echo ${result}" != '') {
                         sh "docker stop ${result}"
                     }
-                def result1 = sh(returnStdout: true, script: 'docker ps --filter expose=8080  --format "{{.ID}}"')
+                    def result1 = sh(returnStdout: true, script: 'docker ps --filter expose=8080  --format "{{.ID}}"')
                     if ("echo ${result1}" != '') {
                         sh "docker stop ${result1}"
-                    } 
+                    }
+                }
               },
               'PushToDockerHub': {
                 withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
