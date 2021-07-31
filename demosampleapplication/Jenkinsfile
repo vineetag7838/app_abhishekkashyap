@@ -1,14 +1,14 @@
 pipeline {
   agent any
   environment{
-      registry = 'kashyapabhishek123/i-abhishekkashyap-master'
+      registry = 'kashyapabhishek123/i-abhishekkashyap-${env.BRANCH_NAME}'
       username = 'kashyapabhishek123'
       project_id = 'prismatic-grail-320808'
       cluster_name = 'cluster-1'
       location = 'us-central1-c'
       credentials_id = 'CloudGKE'
-      docker_port = "${env.BRANCH_NAME == "develop" ? "7200" : "7300"}"
-      gke_port = "${env.BRANCH_NAME == "develop" ? "30157" : "30158"}"
+      docker_port = "${env.BRANCH_NAME == "develop" ? "7300" : "7200"}"
+      gke_port = "${env.BRANCH_NAME == "develop" ? "30158" : "30157"}"
   }
   
   tools {
@@ -29,10 +29,18 @@ pipeline {
             }
         }
         stage('Sonar Analysis') {
+        when { expression { ${env.BRANCH_NAME} == "develop" } }
             steps{
                 withSonarQubeEnv(credentialsId: 'Test_Sonar', installationName: 'Test_Sonar') {
                    sh 'mvn -f demosampleapplication/pom.xml sonar:sonar -Dsonar.projectKey=sonar-abhishekkashyap -Dsonar.host.url=http://localhost:8112'
                 }
+            }
+        }
+        
+        stage('Unit Testing') {
+        when { expression { ${env.BRANCH_NAME} == "master" } }
+            steps{
+                sh 'mvn -f demosampleapplication/pom.xml test'
             }
         }
        
@@ -41,8 +49,8 @@ pipeline {
                 script {
                     sh 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile' 
                 	withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-master:${BUILD_NUMBER}'
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-master:latest'
+	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:${BUILD_NUMBER}'
+	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:latest'
                 	}
                 }
             }
@@ -65,8 +73,8 @@ pipeline {
               },
               'PushToDockerHub': {
                 withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	            	sh 'docker push ${username}/c-abhishekkashyap-master:${BUILD_NUMBER}'
-                    sh 'docker push ${username}/c-abhishekkashyap-master:latest' 
+	            	sh 'docker push ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:${BUILD_NUMBER}'
+                    sh 'docker push ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:latest'
         	      }
               }
             )
