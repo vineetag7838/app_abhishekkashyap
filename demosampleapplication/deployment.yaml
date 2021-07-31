@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
-namespace: kubernetes-cluster-abhishekkashyap
 metadata:
   name: java-app
+  namespace: kubernetes-cluster-abhishekkashyap
   labels:
     app: java-app
 spec:
-  replicas: 3
+  replicas: 4
   selector:
     matchLabels:
       app: java-app
@@ -26,9 +26,10 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-namespace: kubernetes-cluster-abhishekkashyap
 metadata:
   name: java-app
+  namespace: kubernetes-cluster-abhishekkashyap
+  
 spec:
   type: NodePort
   selector:
