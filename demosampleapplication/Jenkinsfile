@@ -1,14 +1,15 @@
 pipeline {
   agent any
   environment{
-      registry = 'kashyapabhishek123/i-abhishekkashyap-master'
+      registry = 'kashyapabhishek123/i-abhishekkashyap-${env.BRANCH_NAME}'
       username = 'kashyapabhishek123'
       project_id = 'prismatic-grail-320808'
       cluster_name = 'cluster-1'
       location = 'us-central1-c'
       credentials_id = 'CloudGKE'
-      docker_port = "${env.BRANCH_NAME == "develop" ? "7200" : "7300"}"
-      gke_port = "${env.BRANCH_NAME == "develop" ? "30157" : "30158"}"
+      docker_port = "${env.BRANCH_NAME == "develop" ? "7300" : "7200"}"
+      gke_port = "${env.BRANCH_NAME == "develop" ? "30158" : "30157"}"
+      branchname="${env.BRANCH_NAME}"
   }
   
   tools {
@@ -29,20 +30,28 @@ pipeline {
             }
         }
         stage('Sonar Analysis') {
+        when { branch 'develop' }
             steps{
                 withSonarQubeEnv(credentialsId: 'Test_Sonar', installationName: 'Test_Sonar') {
                    sh 'mvn -f demosampleapplication/pom.xml sonar:sonar -Dsonar.projectKey=sonar-abhishekkashyap -Dsonar.host.url=http://localhost:8112'
                 }
             }
         }
+        
+        stage('Unit Testing') {
+        when { branch 'master' }
+            steps{
+                sh 'mvn -f demosampleapplication/pom.xml test'
+            }
+        }
        
         stage('Docker Image') {
             steps{
                 script {
-                    sh 'docker build --build-arg port=${docker_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile' 
+                    sh 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile' 
                 	withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-master:${BUILD_NUMBER}'
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-master:latest'
+	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest'
                 	}
                 }
             }
@@ -65,8 +74,8 @@ pipeline {
               },
               'PushToDockerHub': {
                 withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	            	sh 'docker push ${username}/c-abhishekkashyap-master:${BUILD_NUMBER}'
-                    sh 'docker push ${username}/c-abhishekkashyap-master:latest' 
+	            	sh 'docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+                    sh 'docker push ${username}/c-abhishekkashyap-${branchname}:latest'
         	      }
               }
             )
@@ -76,7 +85,7 @@ pipeline {
         stage('Docker Deployment') {
             steps{
                 script {
-                    sh 'docker container run -d --publish 7100:8080 ${username}/c-abhishekkashyap-master:latest'
+                    sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest''
                 }
             }
         }
