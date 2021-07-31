@@ -63,14 +63,23 @@ pipeline {
             parallel(
               'PreContainerCheck': {
                script {
-                    def result = sh(returnStdout: true, script: 'docker ps --filter publish=8080  --format "{{.ID}}"')
-                    if ("${result}" != '') {
-                    	sh(returnStdout: false, script: 'docker stop ${result}')
-                    }
-                    def result1 = sh(returnStdout: true, script: 'docker ps --filter expose=8080  --format "{{.ID}}"')
-                    if ("${result1}" != '') {
-						sh(returnStdout: false, script: 'docker stop ${result1}') 
-                    }
+                result = sh (
+				    script: 'docker ps --filter publish=8080  --format "{{.ID}}"',
+				    returnStdout: true
+				).trim()
+
+                   if(result != ''){
+                       echo "docker stop ${result}"
+                   }
+                   
+                    result = sh (
+				    script: 'docker ps --filter expose=8080  --format "{{.ID}}"',
+				    returnStdout: true
+				).trim()
+
+                   if(result != ''){
+                       echo "docker stop ${result}"
+                   }
                 }
               },
               'PushToDockerHub': {
