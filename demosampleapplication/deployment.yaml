@@ -29,7 +29,6 @@ kind: Service
 metadata:
   name: java-app
   namespace: kubernetes-cluster-abhishekkashyap
-  
 spec:
   type: NodePort
   selector:
