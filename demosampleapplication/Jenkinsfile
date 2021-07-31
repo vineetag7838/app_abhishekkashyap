@@ -9,6 +9,7 @@ pipeline {
       credentials_id = 'CloudGKE'
       docker_port = "${env.BRANCH_NAME == "develop" ? "7300" : "7200"}"
       gke_port = "${env.BRANCH_NAME == "develop" ? "30158" : "30157"}"
+      branchname=${env.BRANCH_NAME}
   }
   
   tools {
@@ -49,8 +50,8 @@ pipeline {
                 script {
                     sh 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile' 
                 	withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:${BUILD_NUMBER}'
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:latest'
+	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest'
                 	}
                 }
             }
@@ -73,8 +74,8 @@ pipeline {
               },
               'PushToDockerHub': {
                 withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	            	sh 'docker push ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:${BUILD_NUMBER}'
-                    sh 'docker push ${username}/c-abhishekkashyap-${env.BRANCH_NAME}:latest'
+	            	sh 'docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+                    sh 'docker push ${username}/c-abhishekkashyap-${branchname}:latest'
         	      }
               }
             )
