@@ -63,12 +63,12 @@ pipeline {
             parallel(
               'PreContainerCheck': {
                script {
-                    def result = sh(returnStdout: true, script: 'docker ps --filter publish=8080  --format "{{.ID}}"')
-                    if ("echo ${result}" != '') {
+                    def result = sh(returnStdout: true, script: 'docker ps --filter expose=8080  --format "{{.ID}}"')
+                    if ("${result}" != '') {
                         sh "docker stop ${result}"
                     }
                     def result1 = sh(returnStdout: true, script: 'docker ps --filter expose=8080  --format "{{.ID}}"')
-                    if ("echo ${result1}" != '') {
+                    if ("${result1}" != '') {
                         sh "docker stop ${result1}"
                     }
                 }
