@@ -9,7 +9,7 @@ pipeline {
       credentials_id = 'CloudGKE'
       docker_port = "${env.BRANCH_NAME == "develop" ? "7300" : "7200"}"
       gke_port = "${env.BRANCH_NAME == "develop" ? "30158" : "30157"}"
-      branchname=${env.BRANCH_NAME}
+      branchname="${env.BRANCH_NAME}"
   }
   
   tools {
