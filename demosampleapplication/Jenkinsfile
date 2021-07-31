@@ -9,7 +9,7 @@ pipeline {
       credentials_id = 'CloudGKE'
       docker_port = "${env.BRANCH_NAME == "develop" ? "7300" : "7200"}"
       gke_port = "${env.BRANCH_NAME == "develop" ? "30158" : "30157"}"
-      branchname="${env.BRANCH_NAME}"
+      branchname="${env.BRANCH_NAME == "develop" ? "develop" : "master"}"
   }
   
   tools {
@@ -85,7 +85,7 @@ pipeline {
         stage('Docker Deployment') {
             steps{
                 script {
-                    sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest''
+                    sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest'
                 }
             }
         }
