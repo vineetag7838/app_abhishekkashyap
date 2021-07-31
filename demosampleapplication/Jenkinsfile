@@ -1,7 +1,6 @@
 pipeline {
   agent any
   environment{
-      registry = 'kashyapabhishek123/i-abhishekkashyap-${env.BRANCH_NAME}'
       username = 'kashyapabhishek123'
       project_id = 'prismatic-grail-320808'
       cluster_name = 'cluster-1'
@@ -10,6 +9,8 @@ pipeline {
       docker_port = "${env.BRANCH_NAME == "develop" ? "7300" : "7200"}"
       gke_port = "${env.BRANCH_NAME == "develop" ? "30158" : "30157"}"
       branchname="${env.BRANCH_NAME == "develop" ? "develop" : "master"}"
+      registry = "kashyapabhishek123/i-abhishekkashyap-${branchname}"
+      
   }
   
   tools {
