@@ -29,7 +29,7 @@ pipeline {
             }
         }
         stage('Sonar Analysis') {
-        when { expression { ${env.BRANCH_NAME == "develop"}} }
+        when { branch 'develop' }
             steps{
                 withSonarQubeEnv(credentialsId: 'Test_Sonar', installationName: 'Test_Sonar') {
                    sh 'mvn -f demosampleapplication/pom.xml sonar:sonar -Dsonar.projectKey=sonar-abhishekkashyap -Dsonar.host.url=http://localhost:8112'
@@ -38,7 +38,7 @@ pipeline {
         }
         
         stage('Unit Testing') {
-        when { expression { ${env.BRANCH_NAME == "master"}} }
+        when { branch 'master' }
             steps{
                 sh 'mvn -f demosampleapplication/pom.xml test'
             }
