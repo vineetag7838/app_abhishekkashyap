@@ -85,7 +85,7 @@ pipeline {
         stage('Docker Deployment') {
             steps{
                 script {
-                    sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-master:latest'
+                    sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest''
                 }
             }
         }
