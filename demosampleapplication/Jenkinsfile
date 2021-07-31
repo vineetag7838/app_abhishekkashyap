@@ -12,104 +12,113 @@ pipeline {
       registry = "kashyapabhishek123/i-abhishekkashyap-${branchname}"
       
   }
-  
+
   tools {
     maven 'MAVEN_HOME'
     dockerTool 'Test_Docker'
   }
-  
-  options{
-      timestamps()
-      timeout(time: 1, unit: 'HOURS')
+
+  options {
+    timestamps()
+    timeout(time: 1, unit: 'HOURS')
 
   }
-  stages { 
-        stage('Build') {
-            steps{
-            	git url: 'https://github.com/abhishekkashyapsudo/app_abhishekkashyap.git'
-                sh 'mvn -f demosampleapplication/pom.xml clean install'
-            }
+  stages {
+    stage('Build') {
+      steps {
+        git url: 'https://github.com/abhishekkashyapsudo/app_abhishekkashyap.git'
+        sh 'mvn -f demosampleapplication/pom.xml clean install'
+      }
+    }
+    stage('Sonar Analysis') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withSonarQubeEnv(credentialsId: 'Test_Sonar', installationName: 'Test_Sonar') {
+          sh 'mvn -f demosampleapplication/pom.xml sonar:sonar -Dsonar.projectKey=sonar-abhishekkashyap -Dsonar.host.url=http://localhost:8112'
         }
-        stage('Sonar Analysis') {
-        when { branch 'develop' }
-            steps{
-                withSonarQubeEnv(credentialsId: 'Test_Sonar', installationName: 'Test_Sonar') {
-                   sh 'mvn -f demosampleapplication/pom.xml sonar:sonar -Dsonar.projectKey=sonar-abhishekkashyap -Dsonar.host.url=http://localhost:8112'
-                }
-            }
-        }
-        
-        stage('Unit Testing') {
-        when { branch 'master' }
-            steps{
-                sh 'mvn -f demosampleapplication/pom.xml test'
-            }
-        }
-       
-        stage('Docker Image') {
-            steps{
-                script {
-                    sh 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile' 
-                	withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
-	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest'
-                	}
-                }
-            }
-        }
-        
-        stage('Containers') {
-          steps {
-            parallel(
-              'PreContainerCheck': {
-               script {
-                result = sh (
-				    script: 'docker ps --filter publish=8080  --format "{{.ID}}"',
-				    returnStdout: true
-				).trim()
+      }
+    }
 
-                   if(result != ''){
-                       echo "docker stop ${result}"
-                   }
-                   
-                    result = sh (
-				    script: 'docker ps --filter expose=8080  --format "{{.ID}}"',
-				    returnStdout: true
-				).trim()
+    stage('Unit Testing') {
+      when {
+        branch 'master'
+      }
+      steps {
+        sh 'mvn -f demosampleapplication/pom.xml test'
+      }
+    }
 
-                   if(result != ''){
-                       echo "docker stop ${result}"
-                   }
-                }
-              },
-              'PushToDockerHub': {
-                withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
-	            	sh 'docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
-                    sh 'docker push ${username}/c-abhishekkashyap-${branchname}:latest'
-        	      }
-              }
-            )
+    stage('Docker Image') {
+      steps {
+        script {
+          sh 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile'
+          withDockerRegistry([credentialsId: 'DockerHub', url: 'https://registry.hub.docker.com']) {
+            sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+            sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest'
           }
         }
-        
-        stage('Docker Deployment') {
-            steps{
-                script {
-                    sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest'
-                }
-            }
-        }
-        stage('Kubernetes Deployment') {
-            steps{
-                step([$class: 'KubernetesEngineBuilder', namespace: kubernetes-cluster-abhishekkashyap, projectId: env.project_id, clusterName: env.cluster_name, location: env.location, manifestPattern: 'demosampleapplication/deployment.yaml', credentialsId: env.credentials_id, verifyDeployments: true])
-            }
-        }
-         
+      }
     }
-    
-    post {
-        always {
-            junit 'demosampleapplication/target/surefire-reports/*.xml'
-        }
+
+    stage('Containers') {
+      steps {
+        parallel(
+          'PreContainerCheck': {
+            script {
+              result = sh(
+                script: 'docker ps --filter publish=8080  --format "{{.ID}}"',
+                returnStdout: true
+              ).trim()
+              if (result != '') {
+                sh(
+                  script: 'docker stop $(docker ps --filter publish=8080  --format "{{.ID}}")',
+                  returnStdout: false
+                )
+              }
+
+              result = sh(
+                script: 'docker ps --filter expose=8080  --format "{{.ID}}"',
+                returnStdout: true
+              ).trim()
+              if (result != '') {
+                sh(
+                  script: 'docker stop $(docker ps --filter expose=8080  --format "{{.ID}}")',
+                  returnStdout: false
+                )
+              }
+
+            }
+          },
+          'PushToDockerHub': {
+            withDockerRegistry([credentialsId: 'DockerHub', url: 'https://registry.hub.docker.com']) {
+              sh 'docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+              sh 'docker push ${username}/c-abhishekkashyap-${branchname}:latest'
+            }
+          }
+        )
+      }
     }
+
+    stage('Docker Deployment') {
+      steps {
+        script {
+          sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest'
+        }
+      }
+    }
+    stage('Kubernetes Deployment') {
+      steps {
+        step([$class: 'KubernetesEngineBuilder', namespace: 'kubernetes-cluster-abhishekkashyap', projectId: env.project_id, clusterName: env.cluster_name, location: env.location, manifestPattern: 'demosampleapplication/deployment.yaml', credentialsId: env.credentials_id, verifyDeployments: true])
+      }
+    }
+
+  }
+
+  post {
+    always {
+      junit 'demosampleapplication/target/surefire-reports/*.xml'
+    }
+  }
 }
