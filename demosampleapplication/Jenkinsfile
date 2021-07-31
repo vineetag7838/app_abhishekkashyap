@@ -39,7 +39,7 @@ pipeline {
         stage('Docker Image') {
             steps{
                 script {
-                    sh 'docker build --build-arg port=${docker_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile' 
+                    sh 'docker build --build-arg port=${docker_port} port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile' 
                 	withDockerRegistry([credentialsId: 'DockerHub', url:'https://registry.hub.docker.com']) {
 	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-master:${BUILD_NUMBER}'
 	                    sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-master:latest'
@@ -76,7 +76,7 @@ pipeline {
         stage('Docker Deployment') {
             steps{
                 script {
-                    sh 'docker container run -d --publish 7100:8080 ${username}/c-abhishekkashyap-master:latest'
+                    sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-master:latest'
                 }
             }
         }
