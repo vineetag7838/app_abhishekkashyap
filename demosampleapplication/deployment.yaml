@@ -35,7 +35,7 @@ spec:
     app: java-app
   ports:
   - protocol: TCP
-    nodePort: $(gke_port)
+    nodePort: 30158
     port: 8080
     targetPort: 8080
   
