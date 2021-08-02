@@ -35,7 +35,7 @@ spec:
     app: java-app
   ports:
   - protocol: TCP
-    nodePort: 30157
+    nodePort: 30158
     port: 8080
     targetPort: 8080
   
