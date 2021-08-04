@@ -109,7 +109,7 @@ pipeline {
     }
     stage('Kubernetes Deployment') {
       steps {
-        step([$class: 'KubernetesEngineBuilder', namespace: 'kubernetes-cluster-abhishekkashyap', projectId: env.project_id, clusterName: env.cluster_name, location: env.location, manifestPattern: 'demosampleapplication/deployment.yaml', credentialsId: env.credentials_id, verifyDeployments: true])
+		    sh 'kubectl apply -f demosampleapplication/deployment.yaml
       }
     }
 
