@@ -85,7 +85,7 @@ pipeline {
               ).trim()
               if (result != '') {
                 bat(
-                  script: "docker stop $(docker ps --filter expose=8080  --format '{{.ID}}')",
+                  script: "docker stop "$(docker ps --filter expose=8080  --format '{{.ID}}')"",
                   returnStdout: false
                 )
               }
