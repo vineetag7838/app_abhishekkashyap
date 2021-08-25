@@ -66,12 +66,13 @@ pipeline {
         parallel(
           'PreContainerCheck': {
             script {
-              result = bat(
+              result = bat (
                 script: "docker ps --filter publish=8080  --format '{{.ID}}'",
                 returnStdout: true
-              ).trim()
+              ).trim() "
+		    echo result
               if (result != '') {
-                bat(
+                bat (
                   script: "docker stop $(docker ps --filter publish=8080  --format '{{.ID}}')",
                   returnStdout: false
                 )
@@ -91,7 +92,7 @@ pipeline {
             }
           },
           'PushToDockerHub': {
-            withDockerRegistry([credentialsId: 'DockerHub', url: 'https://registry.hub.docker.com']) {
+            withDockerRegistry([credentialsId: 'DockerHub', url: ""]) {
               bat "docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}"
               bat "docker push ${username}/c-abhishekkashyap-${branchname}:latest"
             }
