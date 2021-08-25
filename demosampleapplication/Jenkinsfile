@@ -74,7 +74,7 @@ pipeline {
 	      echo result
               if (result != '') {
                 bat (
-                  script: "docker stop $(docker ps --filter publish=8080  --format '{{.ID}}')",
+                  script: "docker stop "$(docker ps --filter publish=8080  --format '{{.ID}}')"",
                   returnStdout: false
                 )
               }
