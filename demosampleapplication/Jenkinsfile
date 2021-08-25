@@ -65,30 +65,30 @@ pipeline {
       steps {
         parallel(
           'PreContainerCheck': {
-            script {
-              result = bat (
-                script: "docker ps --filter publish=8080  --format '{{.ID}}'",
-                returnStdout: true
-              ).trim() 
+//             script {
+//               result = bat (
+//                 script: "docker ps --filter publish=8080  --format '{{.ID}}'",
+//                 returnStdout: true
+//               ).trim() 
 	      
-	      echo result
-              if (result != '') {
-                bat (
-//                   script: "docker stop "$(docker ps --filter publish=8080  --format '{{.ID}}')"",
-//                   returnStdout: false
-                )
-              }
+// 	      echo result
+//               if (result != '') {
+//                 bat (
+// //                   script: "docker stop "$(docker ps --filter publish=8080  --format '{{.ID}}')"",
+// //                   returnStdout: false
+//                 )
+//               }
 
-              result = bat(
-                script: "docker ps --filter expose=8080  --format '{{.ID}}'",
-                returnStdout: true
-              ).trim()
-              if (result != '') {
-                bat(
-//                   script: "docker stop "$(docker ps --filter expose=8080  --format '{{.ID}}')"",
-//                   returnStdout: false
-                )
-              }
+//               result = bat(
+//                 script: "docker ps --filter expose=8080  --format '{{.ID}}'",
+//                 returnStdout: true
+//               ).trim()
+//               if (result != '') {
+//                 bat(
+// //                   script: "docker stop "$(docker ps --filter expose=8080  --format '{{.ID}}')"",
+// //                   returnStdout: false
+//                 )
+//               }
 
             }
           },
