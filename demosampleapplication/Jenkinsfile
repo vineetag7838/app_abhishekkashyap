@@ -65,7 +65,7 @@ pipeline {
       steps {
         parallel(
           'PreContainerCheck': {
-		  script{}
+		  script{}}
 //             script {
 //               result = bat (
 //                 script: "docker ps --filter publish=8080  --format '{{.ID}}'",
