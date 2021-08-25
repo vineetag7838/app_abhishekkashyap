@@ -52,10 +52,10 @@ pipeline {
     stage('Docker Image') {
       steps {
         script {
-          bat 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile'
+          bat "docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile"
           withDockerRegistry([credentialsId: 'DockerHub', url: 'https://registry.hub.docker.com']) {
-            bat 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
-            bat 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest'
+            bat "docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}"
+            bat "docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest"
           }
         }
       }
