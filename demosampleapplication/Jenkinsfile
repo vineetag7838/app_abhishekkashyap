@@ -89,8 +89,8 @@ pipeline {
 // //                   returnStdout: false
 //                 )
 //               }
-
-            }
+//
+//            }
           },
           'PushToDockerHub': {
             withDockerRegistry([credentialsId: 'DockerHub', url: ""]) {
