@@ -74,8 +74,8 @@ pipeline {
 	      echo result
               if (result != '') {
                 bat (
-                  script: "docker stop "$(docker ps --filter publish=8080  --format '{{.ID}}')"",
-                  returnStdout: false
+//                   script: "docker stop "$(docker ps --filter publish=8080  --format '{{.ID}}')"",
+//                   returnStdout: false
                 )
               }
 
@@ -85,8 +85,8 @@ pipeline {
               ).trim()
               if (result != '') {
                 bat(
-                  script: "docker stop "$(docker ps --filter expose=8080  --format '{{.ID}}')"",
-                  returnStdout: false
+//                   script: "docker stop "$(docker ps --filter expose=8080  --format '{{.ID}}')"",
+//                   returnStdout: false
                 )
               }
 
