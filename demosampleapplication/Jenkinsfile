@@ -67,23 +67,23 @@ pipeline {
           'PreContainerCheck': {
             script {
               result = bat(
-                script: 'docker ps --filter publish=8080  --format "{{.ID}}"',
+                script: "docker ps --filter publish=8080  --format '{{.ID}}'",
                 returnStdout: true
               ).trim()
               if (result != '') {
                 bat(
-                  script: 'docker stop $(docker ps --filter publish=8080  --format "{{.ID}}")',
+                  script: "docker stop $(docker ps --filter publish=8080  --format '{{.ID}}')",
                   returnStdout: false
                 )
               }
 
               result = bat(
-                script: 'docker ps --filter expose=8080  --format "{{.ID}}"',
+                script: "docker ps --filter expose=8080  --format '{{.ID}}'",
                 returnStdout: true
               ).trim()
               if (result != '') {
                 bat(
-                  script: 'docker stop $(docker ps --filter expose=8080  --format "{{.ID}}")',
+                  script: "docker stop $(docker ps --filter expose=8080  --format '{{.ID}}')",
                   returnStdout: false
                 )
               }
@@ -92,8 +92,8 @@ pipeline {
           },
           'PushToDockerHub': {
             withDockerRegistry([credentialsId: 'DockerHub', url: 'https://registry.hub.docker.com']) {
-              bat 'docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
-              bat 'docker push ${username}/c-abhishekkashyap-${branchname}:latest'
+              bat "docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}"
+              bat "docker push ${username}/c-abhishekkashyap-${branchname}:latest"
             }
           }
         )
@@ -103,13 +103,13 @@ pipeline {
     stage('Docker Deployment') {
       steps {
         script {
-          bat 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest'
+          bat "docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest"
         }
       }
     }
     stage('Kubernetes Deployment') {
       steps {
-	  bat 'kubectl apply -f demosampleapplication/deployment.yaml --namespace=kubernetes-cluster-abhishekkashyap'
+	  bat "kubectl apply -f demosampleapplication/deployment.yaml --namespace=kubernetes-cluster-abhishekkashyap"
       }
     }
 
@@ -117,7 +117,7 @@ pipeline {
 
   post {
     always {
-      junit 'demosampleapplication/target/surefire-reports/*.xml'
+      junit "demosampleapplication/target/surefire-reports/*.xml"
     }
   }
 }
