@@ -14,7 +14,7 @@ pipeline {
   }
 
   tools {
-    maven 'MAVEN_HOME'
+    maven 'Maven3'
     dockerTool 'Test_Docker'
   }
 
@@ -26,7 +26,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'mvn -f demosampleapplication/pom.xml clean install'
+        bat 'mvn -f demosampleapplication/pom.xml clean install'
       }
     }
     stage('Sonar Analysis') {
@@ -35,7 +35,7 @@ pipeline {
       }
       steps {
         withSonarQubeEnv(credentialsId: 'Test_Sonar', installationName: 'Test_Sonar') {
-          sh 'mvn -f demosampleapplication/pom.xml sonar:sonar -Dsonar.projectKey=sonar-abhishekkashyap -Dsonar.host.url=http://localhost:8112'
+          bat 'mvn -f demosampleapplication/pom.xml sonar:sonar -Dsonar.projectKey=sonar-abhishekkashyap -Dsonar.host.url=http://localhost:9000'
         }
       }
     }
@@ -45,17 +45,17 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh 'mvn -f demosampleapplication/pom.xml test'
+        bat 'mvn -f demosampleapplication/pom.xml test'
       }
     }
 
     stage('Docker Image') {
       steps {
         script {
-          sh 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile'
+          bat 'docker build --build-arg port=${docker_port} --build-arg port1=${gke_port} -t ${registry}:${BUILD_NUMBER} . -f demosampleapplication/Dockerfile'
           withDockerRegistry([credentialsId: 'DockerHub', url: 'https://registry.hub.docker.com']) {
-            sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
-            sh 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest'
+            bat 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+            bat 'docker tag ${registry}:${BUILD_NUMBER} ${username}/c-abhishekkashyap-${branchname}:latest'
           }
         }
       }
@@ -66,23 +66,23 @@ pipeline {
         parallel(
           'PreContainerCheck': {
             script {
-              result = sh(
+              result = bat(
                 script: 'docker ps --filter publish=8080  --format "{{.ID}}"',
                 returnStdout: true
               ).trim()
               if (result != '') {
-                sh(
+                bat(
                   script: 'docker stop $(docker ps --filter publish=8080  --format "{{.ID}}")',
                   returnStdout: false
                 )
               }
 
-              result = sh(
+              result = bat(
                 script: 'docker ps --filter expose=8080  --format "{{.ID}}"',
                 returnStdout: true
               ).trim()
               if (result != '') {
-                sh(
+                bat(
                   script: 'docker stop $(docker ps --filter expose=8080  --format "{{.ID}}")',
                   returnStdout: false
                 )
@@ -92,8 +92,8 @@ pipeline {
           },
           'PushToDockerHub': {
             withDockerRegistry([credentialsId: 'DockerHub', url: 'https://registry.hub.docker.com']) {
-              sh 'docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
-              sh 'docker push ${username}/c-abhishekkashyap-${branchname}:latest'
+              bat 'docker push ${username}/c-abhishekkashyap-${branchname}:${BUILD_NUMBER}'
+              bat 'docker push ${username}/c-abhishekkashyap-${branchname}:latest'
             }
           }
         )
@@ -103,13 +103,13 @@ pipeline {
     stage('Docker Deployment') {
       steps {
         script {
-          sh 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest'
+          bat 'docker container run -d --publish ${docker_port}:8080 ${username}/c-abhishekkashyap-${branchname}:latest'
         }
       }
     }
     stage('Kubernetes Deployment') {
       steps {
-	  sh 'kubectl apply -f demosampleapplication/deployment.yaml --namespace=kubernetes-cluster-abhishekkashyap'
+	  bat 'kubectl apply -f demosampleapplication/deployment.yaml --namespace=kubernetes-cluster-abhishekkashyap'
       }
     }
 
